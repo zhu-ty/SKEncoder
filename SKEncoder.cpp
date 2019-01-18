@@ -23,7 +23,7 @@ int SKEncoder::init(int frameNum, cv::Size imgSize, std::string fileName, FrameT
 	}
 
 	_encodeCLIOptions = NvEncoderInitParam("-codec hevc");
-
+	//NvEncoderInitParam encodeCLIOptions("-codec hevc -rc vbr -bitrate 50M -maxbitrate 100M");
 
 	if(_type == FrameType::IYUV)
 		_eFormat = NV_ENC_BUFFER_FORMAT_IYUV;
