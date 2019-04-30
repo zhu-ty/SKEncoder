@@ -27,49 +27,30 @@ set(CUDA_NVCC_FLAGS
 	-gencode=arch=compute_61,code=\"sm_61,compute_61\"
     )
 
-set(headers_h
-    NvEncoder/NvEncoder/nvEncodeAPI.h
-    NvEncoder/NvEncoder/NvEncoder.h
-    NvEncoder/NvEncoder/NvEncoderCuda.h
-    NvEncoder/Utils/Logger.h
-    NvEncoder/Utils/NvEncoderCLIOptions.h
-    NvEncoder/Utils/NvCodecUtils.h
-    SKEncoder.h
-    SKCommon.hpp
+file (GLOB this_headers_h "./*.h")
+file (GLOB this_headers_hpp "./*.hpp")
+set (headers
+	${this_headers_h}
+	${this_headers_hpp}
+)
+file (GLOB this_headers_cpp "./*.cpp")
+file (GLOB this_headers_c "./*.c")
+set (sources
+	${this_headers_cpp}
+	${this_headers_c}
 )
 
-set(source_cpp
-    NvEncoder/NvEncoder/NvEncoder.cpp
-    NvEncoder/NvEncoder/NvEncoderCuda.cpp
-    SKEncoder.cpp
-    main.cpp
-)
-
-
-
-# file (GLOB_RECURSE headers_h "./*.h")
-# file (GLOB_RECURSE headers_hpp "./*.hpp")
-# file (GLOB_RECURSE source_cpp "./*.cpp")
-
-#list(REMOVE_ITEM source_cpp "build/*")
-FOREACH(item ${source_cpp})
-  IF(${item} MATCHES "build/*")
-    LIST(REMOVE_ITEM source_cpp ${item})
-  ENDIF(${item} MATCHES "build/*")
-ENDFOREACH(item)
 
 set(MY_HEADER_FILES
-    ${headers_h}
-    ${headers_hpp}
+    ${headers}
 )
 
 set(MY_SOURCE_FILES 
-    ${source_cpp}
+    ${sources}
 )
 
 include_directories(
     ${PROJECT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/NvEncoder
 )
 
 cuda_add_executable(${name}
@@ -79,31 +60,17 @@ cuda_add_executable(${name}
 
 #message (${PROJECT_SOURCE_DIR}/lib/x64/nvcuvid.lib)
 
-if( WIN32 )
-    set(NVCUVID_LIB ${PROJECT_SOURCE_DIR}/lib/x64/nvcuvid.lib)
-else()
-    set(NVCUVID_LIB 
-    ${PROJECT_SOURCE_DIR}/lib/linux/stubs/x86_64/libnvcuvid.so
-    ${PROJECT_SOURCE_DIR}/lib/linux/stubs/x86_64/libnvidia-encode.so)
-endif()
+#if( WIN32 )
+#    set(NVCUVID_LIB ${PROJECT_SOURCE_DIR}/lib/x64/nvcuvid.lib)
+#else()
+#    set(NVCUVID_LIB 
+#    ${PROJECT_SOURCE_DIR}/lib/linux/stubs/x86_64/libnvcuvid.so
+#    ${PROJECT_SOURCE_DIR}/lib/linux/stubs/x86_64/libnvidia-encode.so)
+#endif()
 
 
 target_link_libraries(${name}
     cuda
-	#${PROJECT_SOURCE_DIR}/lib/x64/nvcuvid.lib  
-    ${NVCUVID_LIB}
+    # ${NVCUVID_LIB}
     ${OpenCV_LIBS}
-    ${CUDA_LIBRARY} 	
-	${CUDA_npp_LIBRARY} 
-	${CUDA_nppc_LIBRARY} 
-    ${CUDA_nppicc_LIBRARY}
-    ${CUDA_nppicom_LIBRARY}
-	${CUDA_nppidei_LIBRARY}
-	${CUDA_nppif_LIBRARY}
-	${CUDA_nppig_LIBRARY}
-	${CUDA_nppim_LIBRARY}
-	${CUDA_nppist_LIBRARY}
-	${CUDA_nppisu_LIBRARY}
-	${CUDA_nppitc_LIBRARY}
-	${CUDA_npps_LIBRARY} 
 )

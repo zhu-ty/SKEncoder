@@ -22,6 +22,8 @@
 #include <string>
 #include <ctime>
 #include <algorithm>
+#include <random>
+#include <regex>
 #if defined(_WIN32) || defined(WIN32)
 //#define _WINSOCKAPI_ 
 #include <windows.h>
@@ -32,17 +34,23 @@
 #else
 #include <signal.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <stdarg.h>
 #include <pthread.h>
 #endif
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
-#endif
+//#ifndef max
+//#define max(a,b)            (((a) > (b)) ? (a) : (b))
+//#endif
+//
+//#ifndef min
+//#define min(a,b)            (((a) < (b)) ? (a) : (b))
+//#endif
 
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
-#endif
+#define VALUE_TO_STRING(x) #x
+#define VALUE(x) VALUE_TO_STRING(x)
+#define VAR_NAME_VALUE(var) #var "="  VALUE(var)
 
 #ifndef WIN32
 #define BLACK_TEXT(x) "\033[30;1m" << x << "\033[0m"
@@ -63,7 +71,7 @@
 #endif
 #endif
 
-#define DEBUG_STRING std::string("file: " +   \
+#define SKCOMMON_DEBUG_STRING std::string("file: " +   \
 ((std::string(__FILE__).find_last_of("/") != std::string::npos || std::string(__FILE__).find_last_of("\\") != std::string::npos) ?   \
  (  \
 (std::string(__FILE__).find_last_of("\\") != std::string::npos) ? \
@@ -73,7 +81,13 @@
  : std::string(__FILE__))  \
 + " line: " + std::to_string(__LINE__) +" func: " + std::string(__func__) +"\n") 
 
-class SysUtil {
+#define SKCOMMON_MAX_INFO_LENTH 8192
+
+#define SKCOMMON_USED
+
+
+
+class SKCommon {
 private:
 	enum class ConsoleColor {
 		red = 12,
@@ -89,12 +103,11 @@ public:
 	/*                    mkdir function                       */
 	/***********************************************************/
 	static int mkdir(char* dir) {
+		infoOutput("Makring dir :" + std::string(dir));
 #ifdef WIN32
 		_mkdir(dir);
 #else
-		char command[256];
-		sprintf(command, "mkdir %s", dir);
-		system(command);
+		printf("MKDIR RETURN:: %d\n",::mkdir(dir, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH));
 #endif
 		return 0;
 	}
@@ -102,17 +115,11 @@ public:
 		return mkdir((char *)dir.c_str());
 	}
 
-	/***********************************************************/
-	/*                    sleep function                       */
-	/***********************************************************/
 	static int sleep(size_t miliseconds) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(miliseconds));
 		return 0;
 	}
 
-	/***********************************************************/
-	/*             make colorful console output                */
-	/***********************************************************/
 	static int setConsoleColor(ConsoleColor color) {
 #ifdef WIN32
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), static_cast<int>(color));
@@ -120,56 +127,6 @@ public:
 		return 0;
 	}
 
-	/***********************************************************/
-	/*                 warning error output                    */
-	/***********************************************************/
-	static int errorOutput(std::string info) {
-#ifdef WIN32
-		SysUtil::setConsoleColor(ConsoleColor::red);
-		std::cerr << "ERROR: " << info.c_str() << std::endl;
-		SysUtil::setConsoleColor(ConsoleColor::white);
-#else
-		std::cerr << RED_TEXT("ERROR: ") << RED_TEXT(info.c_str())
-			<< std::endl;
-#endif
-		return 0;
-	}
-
-	static int warningOutput(std::string info) {
-#ifdef WIN32
-		SysUtil::setConsoleColor(ConsoleColor::yellow);
-		std::cerr << "WARNING: " << info.c_str() << std::endl;
-		SysUtil::setConsoleColor(ConsoleColor::white);
-#else
-		std::cerr << YELLOW_TEXT("WARNING: ") << YELLOW_TEXT(info.c_str())
-			<< std::endl;
-#endif
-		return 0;
-	}
-
-	static int infoOutput(std::string info) {
-#ifdef WIN32
-		SysUtil::setConsoleColor(ConsoleColor::green);
-		std::cerr << "INFO: " << info.c_str() << std::endl;
-		SysUtil::setConsoleColor(ConsoleColor::white);
-#else
-		std::cerr << GREEN_TEXT("INFO: ") << GREEN_TEXT(info.c_str())
-			<< std::endl;
-#endif
-		return 0;
-	}
-
-	static int debugOutput(std::string info) {
-#ifdef WIN32
-		SysUtil::setConsoleColor(ConsoleColor::pink);
-		std::cerr << "DEBUG INFO: " << info.c_str() << std::endl;
-		SysUtil::setConsoleColor(ConsoleColor::white);
-#else
-		std::cerr << MAGENTA_TEXT("DEBUG INFO: ") << MAGENTA_TEXT(info.c_str())
-			<< std::endl;
-#endif
-		return 0;
-	}
 
 	static std::string getTimeString()
 	{
@@ -215,27 +172,77 @@ public:
 		
 	}
 
-	static inline std::string format(const char *msg, ...)
+	static inline std::string format(std::string msg, ...)
 	{
-		std::size_t const STRING_BUFFER(4096);
-		char text[STRING_BUFFER];
 		va_list list;
-
-		if (msg == 0)
-			return std::string();
-
+		std::string text;
 		va_start(list, msg);
-#		if(GLM_COMPILER & GLM_COMPILER_VC)
-		vsprintf_s(text, STRING_BUFFER, msg, list);
-#		else//
-		vsprintf(text, msg, list);
-#		endif//
+		text = SKCommon::_vsprint(msg, list);
 		va_end(list);
-
-		return std::string(text);
+		return text;
 	}
 
-	static inline bool existFile(const std::string& name) {
+	static int infoOutput(std::string info, ...)
+	{
+		std::string text;
+		va_list list;
+		if (info == "")
+			return 0;
+		va_start(list, info);
+		text = SKCommon::_vsprint(info, list);
+		va_end(list);
+		SKCommon::_infoOutput(text);
+		return 0;
+	}
+
+	static int errorOutput(std::string info, ...)
+	{
+		std::string text;
+		va_list list;
+		if (info == "")
+			return 0;
+		va_start(list, info);
+		text = SKCommon::_vsprint(info, list);
+		va_end(list);
+		SKCommon::_errorOutput(text);
+		return 0;
+	}
+
+	static int warningOutput(std::string info, ...)
+	{
+		std::string text;
+		va_list list;
+		if (info == "")
+			return 0;
+		va_start(list, info);
+		text = SKCommon::_vsprint(info, list);
+		va_end(list);
+		SKCommon::_warningOutput(text);
+		return 0;
+	}
+
+
+	static int debugOutput(std::string info, ...)
+	{
+		std::string text;
+		va_list list;
+		if (info == "")
+			return 0;
+		va_start(list, info);
+		text = SKCommon::_vsprint(info, list);
+		va_end(list);
+		SKCommon::_debugOutput(text);
+		return 0;
+	}
+
+	static int mkEmptyFile(std::string dir) 
+	{
+		FILE *a = fopen(dir.c_str(), "w");
+		return fclose(a);
+	}
+
+	static inline bool existFile(const std::string& name) 
+	{
 		if (FILE *file = fopen(name.c_str(), "r")) {
 			fclose(file);
 			return true;
@@ -244,11 +251,47 @@ public:
 			return false;
 		}
 	}
+
+	static int copyFile(std::string file1, std::string file2)
+	{
+		if (file1 == file2)
+			return -1;
+		FILE *src = fopen(file1.c_str(), "rb");
+		FILE *dst = fopen(file2.c_str(), "wb");
+		if (src == nullptr)
+			return -2;
+		int i;
+		for (i = getc(src); i != EOF; i = getc(src))
+		{
+			putc(i, dst);
+		}
+		fclose(dst);
+		fclose(src);
+	}
+
+	static int removeFile(std::string file)
+	{
+		return remove(file.c_str());
+	}
+
+	static std::string getFileExtention(std::string fileName)
+	{
+		return fileName.substr(fileName.find_last_of(".") + 1);
+	}
 	
 	static inline std::string toLower(std::string in)
 	{
 		std::transform(in.begin(), in.end(), in.begin(), singletolower); //Better than ::tolower() when work with UTF-8
 		return in;
+	}
+
+	static std::vector<std::string> splitString(std::string input, std::string regex) {
+		// passing -1 as the submatch index parameter performs splitting
+		std::regex re(regex);
+		std::sregex_token_iterator
+			first{ input.begin(), input.end(), re, -1 },
+			last;
+		return{ first, last };
 	}
 	
 private:
@@ -256,6 +299,68 @@ private:
 		if (in <= 'Z' && in >= 'A')
 			return in - ('Z' - 'z');
 		return in;
+	}
+
+	static std::string _vsprint(std::string str, va_list list)
+	{
+		std::size_t const STRING_BUFFER(SKCOMMON_MAX_INFO_LENTH);
+		char text[STRING_BUFFER];
+		if (str == "")
+			return std::string();
+#		if(GLM_COMPILER & GLM_COMPILER_VC)
+		vsprintf_s(text, STRING_BUFFER, str.c_str(), list);
+#		else//
+		vsprintf(text, str.c_str(), list);
+#		endif//
+		return std::string(text);
+	}
+
+	static int _errorOutput(std::string info) {
+#ifdef WIN32
+		SKCommon::setConsoleColor(ConsoleColor::red);
+		std::cerr << "ERROR: " << info.c_str() << std::endl;
+		SKCommon::setConsoleColor(ConsoleColor::white);
+#else
+		std::cerr << RED_TEXT("ERROR: ") << RED_TEXT(info.c_str())
+			<< std::endl;
+#endif
+		return 0;
+	}
+
+	static int _warningOutput(std::string info) {
+#ifdef WIN32
+		SKCommon::setConsoleColor(ConsoleColor::yellow);
+		std::cerr << "WARNING: " << info.c_str() << std::endl;
+		SKCommon::setConsoleColor(ConsoleColor::white);
+#else
+		std::cerr << YELLOW_TEXT("WARNING: ") << YELLOW_TEXT(info.c_str())
+			<< std::endl;
+#endif
+		return 0;
+	}
+
+	static int _infoOutput(std::string info) {
+#ifdef WIN32
+		SKCommon::setConsoleColor(ConsoleColor::green);
+		std::cerr << "INFO: " << info.c_str() << std::endl;
+		SKCommon::setConsoleColor(ConsoleColor::white);
+#else
+		std::cerr << GREEN_TEXT("INFO: ") << GREEN_TEXT(info.c_str())
+			<< std::endl;
+#endif
+		return 0;
+	}
+
+	static int _debugOutput(std::string info) {
+#ifdef WIN32
+		SKCommon::setConsoleColor(ConsoleColor::pink);
+		std::cerr << "DEBUG INFO: " << info.c_str() << std::endl;
+		SKCommon::setConsoleColor(ConsoleColor::white);
+#else
+		std::cerr << MAGENTA_TEXT("DEBUG INFO: ") << MAGENTA_TEXT(info.c_str())
+			<< std::endl;
+#endif
+		return 0;
 	}
 };
 

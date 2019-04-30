@@ -61,14 +61,14 @@ int main(int argc, char* argv[])
 	cv::cuda::GpuMat gm[FRAME_NUM];
 	for (int i = 0; i < FRAME_NUM; i++)
 	{
-		cv::Mat im = cv::imread(SysUtil::format("data/CUCAU1731016_00_%05d.jpg", i));
+		cv::Mat im = cv::imread(SKCommon::format("data/CUCAU1731016_00_%05d.jpg", i));
 		cv::Mat ABGR;
 		cv::cvtColor(im, ABGR, cv::COLOR_BGR2RGBA);
 		gm[i].upload(ABGR);
 		if (i % 20 == 0)
-			SysUtil::infoOutput(SysUtil::format("Buffering Data Frame = %d, All = %d", i, FRAME_NUM));
+			SKCommon::infoOutput("Buffering Data Frame = %d, All = %d", i, FRAME_NUM);
 	}
-	SysUtil::infoOutput("Data All Buffered, Start Encoding.");
+	SKCommon::infoOutput("Data All Buffered, Start Encoding.");
 	for (int i = 0; i < FRAME_NUM; i++)
 	{
 		encoder.encode(gm[i].data, gm[i].step);

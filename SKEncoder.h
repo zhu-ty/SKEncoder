@@ -38,10 +38,9 @@
 #endif
 #include <device_launch_parameters.h>
 
-#include "NvEncoder/NvEncoderCuda.h"
-#include "Utils/Logger.h"
-#include "Utils/NvEncoderCLIOptions.h"
-#include "Utils/NvCodecUtils.h"
+#include "NvEncoderCuda.h"
+#include "NvEncoderCLIOptions.h"
+#include "NvCodecUtils.h"
 
 #include "SKCommon.hpp"
 
