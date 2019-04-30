@@ -130,7 +130,7 @@ int SKEncoder::endEncode()
 	}
 	_enc->DestroyEncoder();
 	_fpOut.close();
-	SKCommon::infoOutput(_fileName + " Encode done!\n");
+	SKCommon::infoOutput(_fileName + " Encode done!");
 	return 0;
 }
 
@@ -138,7 +138,7 @@ int SKEncoder::printStatInfo()
 {
 	if (_encodedFrameNum % _stat_step == 0)
 	{
-		SKCommon::infoOutput(SKCommon::format("%s : Frame:%d, Total:%d, FrameRate:%f fps\n",
+		SKCommon::infoOutput(SKCommon::format("%s : Frame:%d, Total:%d, FrameRate:%f fps",
 			_fileName.c_str(), _encodedFrameNum, _frameNum,
 			_stat_step * 1000000.0f / (SKCommon::getCurrentTimeMicroSecond() - _stat_last_time)));
 		_stat_last_time = SKCommon::getCurrentTimeMicroSecond();
