@@ -47,11 +47,10 @@ int main(int argc, char* argv[])
 	{
 		output = argv[2];
 	}
-	else
-		output = input.substr(0, input.find_last_of('.')) + ".h265";
 	std::vector<cv::Mat> data;
 	if (SKCommon::getFileExtention(input) == "") //it's a folder
 	{
+		output = input + ".h265";
 		auto files = CollectFiles(input, std::vector<std::string>{".jpg", ".png", ".tiff"});
 		if (files.size() == 0)
 		{
@@ -70,6 +69,7 @@ int main(int argc, char* argv[])
 	}
 	else //it's a video file
 	{
+		output = input.substr(0, input.find_last_of('.')) + ".h265";
 		cv::VideoCapture vc;
 		vc.open(input);
 		if (vc.isOpened() == false)
@@ -96,10 +96,10 @@ int main(int argc, char* argv[])
 		cv::cvtColor(data[i], t0, cv::COLOR_BGR2BGRA);
 		cv::cuda::GpuMat tg(t0);
 		encoder.encode(tg.data, tg.step);
-		if (i % (data.size() / stat_p) == 0)
-		{
-			SKCommon::infoOutput("Encode video %d%% percent", i / (data.size() / stat_p) * stat_p);
-		}
+		//if (i % (data.size() / stat_p) == 0)
+		//{
+		//	SKCommon::infoOutput("Encode video %d%% percent", i / (data.size() / stat_p) * stat_p);
+		//}
 	}
 	encoder.endEncode();
 }
