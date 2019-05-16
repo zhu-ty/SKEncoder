@@ -7,6 +7,11 @@ cmake_minimum_required (VERSION 3.10)
 set(name "SKEncoder")
 project ( ${name} )
 
+SET(MAJOR_VERSION "1")
+SET(MINOR_VERSION "0")
+add_definitions( -D__MAJOR_VERSION__=${MAJOR_VERSION})
+add_definitions( -D__MINOR_VERSION__=${MINOR_VERSION})
+
 # c++ version
 set (CMAKE_CXX_STANDARD 11)
 
