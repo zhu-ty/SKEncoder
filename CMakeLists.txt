@@ -107,7 +107,7 @@ FILE(WRITE ${CMAKE_BINARY_DIR}/version.h.in
 IF(EXISTS ${PROJECT_SOURCE_DIR}/.git)
 FILE(WRITE ${CMAKE_BINARY_DIR}/version.cmake
 "EXECUTE_PROCESS(
-     COMMAND git log -1 --format=%ad --date=format:%y%m%d_%H%M%S
+     COMMAND git log -1 --format=%ad --date=format:%y%m%d.%H%M%S
      OUTPUT_VARIABLE VERSION
      OUTPUT_STRIP_TRAILING_WHITESPACE
  )
