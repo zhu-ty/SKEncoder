@@ -10,6 +10,16 @@ project ( ${name} )
 # c++ version
 set (CMAKE_CXX_STANDARD 11)
 
+execute_process(
+	COMMAND	git log -1  --format=%ad --date=format:%y%m%d_%H%M%S
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
+	OUTPUT_VARIABLE GIT_VERSION
+)
+# MESSAGE(${GIT_VERSION})
+string (REGEX REPLACE "[\n\t\r]" "" GIT_VERSION ${GIT_VERSION})
+add_definitions( -D__GIT_VERSION__=\"${GIT_VERSION}\")
+
+
 # opencv 
 if ( WIN32 )
     set(OpenCV_CONFIG_PATH "E:/libs/OpenCV")

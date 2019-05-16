@@ -13,6 +13,9 @@
 
 #include "SKEncoder.h"
 
+#define MAJOR_VER 1
+#define MINOR_VER 0
+
 std::vector<std::string> CollectFiles(std::string dir, std::vector<std::string> allowedExtensions)
 {
 	std::vector<std::string> ret;
@@ -37,9 +40,11 @@ std::vector<std::string> CollectFiles(std::string dir, std::vector<std::string> 
 int main(int argc, char* argv[]) 
 {
 	int stat_p = 10;
+	SKCommon::infoOutput("Version = %d.%d.%s", MAJOR_VER, MINOR_VER, __GIT_VERSION__);
 	if (argc < 2)
 	{
 		SKCommon::infoOutput("Usage : SKEncoder [Folder/VidFile] ([DstName])");
+		return -1;
 	}
 	std::string input = argv[1];
 	std::string output = "output.h265";
