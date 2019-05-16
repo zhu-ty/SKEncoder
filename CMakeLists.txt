@@ -10,14 +10,16 @@ project ( ${name} )
 # c++ version
 set (CMAKE_CXX_STANDARD 11)
 
-execute_process(
-	COMMAND	git log -1  --format=%ad --date=format:%y%m%d_%H%M%S
-	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
-	OUTPUT_VARIABLE GIT_VERSION
-)
+#execute_process(
+#	COMMAND	git log -1  --format=%ad --date=format:%y%m%d_%H%M%S
+#	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
+#	OUTPUT_VARIABLE GIT_VERSION
+#)
 # MESSAGE(${GIT_VERSION})
-string (REGEX REPLACE "[\n\t\r]" "" GIT_VERSION ${GIT_VERSION})
-add_definitions( -D__GIT_VERSION__=\"${GIT_VERSION}\")
+#string (REGEX REPLACE "[\n\t\r]" "" GIT_VERSION ${GIT_VERSION})
+#add_definitions( -D__GIT_VERSION__=\"${GIT_VERSION}\")
+
+
 
 
 # opencv 
@@ -84,3 +86,50 @@ target_link_libraries(${name}
     # ${NVCUVID_LIB}
     ${OpenCV_LIBS}
 )
+
+
+#IF(EXISTS ${PROJECT_SOURCE_DIR}/.git)
+#
+#add_custom_command(TARGET ${name}
+#                   PRE_LINK
+#                   #COMMAND git --version
+#				   COMMAND powershell "git log -1 --format='%ad' > ${CMAKE_BINARY_DIR}/test.txt"
+#				#--date=format:%%y%%m%%d_%%H%%M%%S
+#                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+#
+#ELSE()
+#
+#ENDIF()
+
+FILE(WRITE ${CMAKE_BINARY_DIR}/version.h.in
+"\#define __GIT_VERSION__ \"@VERSION@\"\n"
+)
+IF(EXISTS ${PROJECT_SOURCE_DIR}/.git)
+FILE(WRITE ${CMAKE_BINARY_DIR}/version.cmake
+"EXECUTE_PROCESS(
+     COMMAND git log -1 --format=%ad --date=format:%y%m%d_%H%M%S
+     OUTPUT_VARIABLE VERSION
+     OUTPUT_STRIP_TRAILING_WHITESPACE
+ )
+ CONFIGURE_FILE(\${SRC} \${DST} @ONLY)
+")
+ELSE()
+FILE(WRITE ${CMAKE_BINARY_DIR}/version.cmake
+"EXECUTE_PROCESS(
+     COMMAND echo unknown
+     OUTPUT_VARIABLE VERSION
+     OUTPUT_STRIP_TRAILING_WHITESPACE
+ )
+ CONFIGURE_FILE(\${SRC} \${DST} @ONLY)
+")
+ENDIF()
+INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+#ADD_EXECUTABLE(main main.c)
+ADD_CUSTOM_TARGET(
+    version
+    ${CMAKE_COMMAND} -D SRC=${CMAKE_BINARY_DIR}/version.h.in
+                     -D DST=${CMAKE_BINARY_DIR}/version.h
+                     -P ${CMAKE_BINARY_DIR}/version.cmake
+)
+
+ADD_DEPENDENCIES(${name} version)

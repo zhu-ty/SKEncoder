@@ -12,6 +12,7 @@
 #include <opencv2/opencv.hpp>
 
 #include "SKEncoder.h"
+#include "version.h"
 
 #define MAJOR_VER 1
 #define MINOR_VER 0
