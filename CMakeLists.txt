@@ -10,18 +10,6 @@ project ( ${name} )
 # c++ version
 set (CMAKE_CXX_STANDARD 11)
 
-#execute_process(
-#	COMMAND	git log -1  --format=%ad --date=format:%y%m%d_%H%M%S
-#	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
-#	OUTPUT_VARIABLE GIT_VERSION
-#)
-# MESSAGE(${GIT_VERSION})
-#string (REGEX REPLACE "[\n\t\r]" "" GIT_VERSION ${GIT_VERSION})
-#add_definitions( -D__GIT_VERSION__=\"${GIT_VERSION}\")
-
-
-
-
 # opencv 
 if ( WIN32 )
     set(OpenCV_CONFIG_PATH "E:/libs/OpenCV")
@@ -70,36 +58,11 @@ cuda_add_executable(${name}
     ${MY_SOURCE_FILES}
 )
 
-#message (${PROJECT_SOURCE_DIR}/lib/x64/nvcuvid.lib)
-
-#if( WIN32 )
-#    set(NVCUVID_LIB ${PROJECT_SOURCE_DIR}/lib/x64/nvcuvid.lib)
-#else()
-#    set(NVCUVID_LIB 
-#    ${PROJECT_SOURCE_DIR}/lib/linux/stubs/x86_64/libnvcuvid.so
-#    ${PROJECT_SOURCE_DIR}/lib/linux/stubs/x86_64/libnvidia-encode.so)
-#endif()
-
-
 target_link_libraries(${name}
     cuda
     # ${NVCUVID_LIB}
     ${OpenCV_LIBS}
 )
-
-
-#IF(EXISTS ${PROJECT_SOURCE_DIR}/.git)
-#
-#add_custom_command(TARGET ${name}
-#                   PRE_LINK
-#                   #COMMAND git --version
-#				   COMMAND powershell "git log -1 --format='%ad' > ${CMAKE_BINARY_DIR}/test.txt"
-#				#--date=format:%%y%%m%%d_%%H%%M%%S
-#                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-#
-#ELSE()
-#
-#ENDIF()
 
 FILE(WRITE ${CMAKE_BINARY_DIR}/version.h.in
 "\#define __GIT_VERSION__ \"@VERSION@\"\n"
