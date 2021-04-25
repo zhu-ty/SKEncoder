@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 	if (SKCommon::getFileExtention(input) == "") //it's a folder
 	{
 		output = input + ".h265";
-		auto files = CollectFiles(input, std::vector<std::string>{".jpg", ".png", ".tiff"});
+		auto files = CollectFiles(input, std::vector<std::string>{".jpg", ".png", ".tiff", ".tif"});
 		if (files.size() == 0)
 		{
 			SKCommon::errorOutput(SKCOMMON_DEBUG_STRING + "No file found in folder %s", input.c_str());
